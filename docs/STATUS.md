@@ -59,8 +59,11 @@ o que a próxima pessoa precisa saber.
 ### 2026-08-18 · — · setup
 
 Repositório criado: **https://github.com/Zezoca29/cdc-cnpj** (privado, branch `main`).
-Vira público na defesa, conforme decidido. Falta adicionar os outros 3 integrantes como
-colaboradores — sem isso ninguém mais consegue clonar.
+Vira público na defesa, conforme decidido.
+
+**Colaboradores.** Convite de escrita enviado a `luizlevindiniz` (Luiz Felipe Levin Diniz) em
+18/08 — **pendente de aceitação**; ele precisa aceitar em github.com/notifications antes de
+conseguir clonar. Faltam ainda 2 integrantes: sem convite, ninguém mais acessa o repositório.
 
 `.gitignore` bloqueia `data/`, `*.zip`, `*.parquet` e `*.csv`: os 85 GB **nunca** entram no
 repositório. O que garante reprodutibilidade é o `manifesto.json` (nome, tamanho, SHA-256,
