@@ -58,6 +58,15 @@ o que a próxima pessoa precisa saber.
 
 ### 2026-08-18 · — · setup
 
+Repositório criado: **https://github.com/Zezoca29/cdc-cnpj** (privado, branch `main`).
+Vira público na defesa, conforme decidido. Falta adicionar os outros 3 integrantes como
+colaboradores — sem isso ninguém mais consegue clonar.
+
+`.gitignore` bloqueia `data/`, `*.zip`, `*.parquet` e `*.csv`: os 85 GB **nunca** entram no
+repositório. O que garante reprodutibilidade é o `manifesto.json` (nome, tamanho, SHA-256,
+origem), que é versionado de propósito. Licença MIT — o titular está como
+"CDC-CNPJ contributors"; ajustar quando a equipe estiver definida.
+
 Criação do harness de projeto a partir da spec v1.0. Estrutura de documentos, checklists e
 verificação automatizada no lugar.
 
