@@ -1,0 +1,71 @@
+# === DADOS — NUNCA versionar ===
+# Os snapshots do CNPJ somam ~85 GB por competencia. O que garante
+# reprodutibilidade e o manifesto.json (nome, tamanho, SHA-256, origem),
+# nao os arquivos. Ver spec secao 16, entregavel 4.
+data/
+raw/
+*.zip
+*.parquet
+*.csv
+!docs/**/*.csv
+!**/fixtures/**/*.csv
+!**/test/resources/**/*.csv
+
+# Manifestos SAO versionados (sao entregavel do projeto)
+!**/manifesto.json
+!**/manifest.json
+
+# === Medicoes ===
+# Resultados brutos das execucoes sao entregavel — versionar em results/
+# Saidas intermediarias de execucao, nao.
+runs/
+tmp/
+out/
+
+# === Java / Maven ===
+target/
+build/
+*.class
+*.jar
+!**/gradle/wrapper/*.jar
+dependency-reduced-pom.xml
+.mvn/timing.properties
+
+# === Python ===
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# === Docker / infra local ===
+docker-volumes/
+pgdata/
+kafka-data/
+zookeeper-data/
+
+# === Segredos ===
+.env
+.env.*
+*.pem
+*.key
+credentials*
+secrets*
+
+# === IDEs ===
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+*.swp
+
+# === SO ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Logs ===
+*.log
+logs/
