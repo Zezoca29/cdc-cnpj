@@ -24,8 +24,8 @@ public final class DashboardArtifactsRepository {
 
     private final Path dataRoot;
 
-    public DashboardArtifactsRepository(Path projectRoot) {
-        this.dataRoot = projectRoot.resolve("data");
+    public DashboardArtifactsRepository(Path dataRoot) {
+        this.dataRoot = dataRoot;
     }
 
     public List<ManifestSummary> listManifests() throws IOException {

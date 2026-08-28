@@ -23,13 +23,16 @@ public final class ChangelogApiServer implements AutoCloseable {
     private final ChangelogRepository repository;
     private final DashboardArtifactsRepository artifacts;
     private final ObjectMapper objectMapper;
+    private final String corsOrigin;
 
     public ChangelogApiServer(
-            int port, ChangelogRepository repository, DashboardArtifactsRepository artifacts) throws IOException {
+            DashboardApiConfig config, ChangelogRepository repository, DashboardArtifactsRepository artifacts)
+            throws IOException {
         this.repository = repository;
         this.artifacts = artifacts;
         this.objectMapper = EventJsonMapper.create();
-        this.server = HttpServer.create(new InetSocketAddress(port), 0);
+        this.corsOrigin = config.corsOrigin();
+        this.server = HttpServer.create(new InetSocketAddress(config.bindHost(), config.port()), 0);
         this.server.createContext("/api/health", this::health);
         this.server.createContext("/api/stats", this::stats);
         this.server.createContext("/api/events", this::events);
@@ -295,10 +298,15 @@ public final class ChangelogApiServer implements AutoCloseable {
         sendJson(exchange, status, body);
     }
 
-    private static void addCors(Headers headers) {
-        headers.set("Access-Control-Allow-Origin", "*");
+    private static void addCors(Headers headers, String corsOrigin) {
+        String origin = corsOrigin == null || corsOrigin.isBlank() ? "*" : corsOrigin;
+        headers.set("Access-Control-Allow-Origin", origin);
         headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
         headers.set("Access-Control-Allow-Headers", "Content-Type");
+    }
+
+    private void addCors(Headers headers) {
+        addCors(headers, corsOrigin);
     }
 
     private static Map<String, String> queryParams(URI uri) {

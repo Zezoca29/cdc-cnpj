@@ -182,3 +182,26 @@ O job longo roda **na VM** (tmux). O workflow só liga o servidor, dispara o scr
 
 Competência atual em execução manual: na VM, `./infra/cloud-vm/schedule-shutdown-when-idle.sh`
 agenda desligamento quando o pipeline terminar.
+
+---
+
+## Dashboard em produção (após o pipeline popular o changelog)
+
+Com Postgres + changelog na VM:
+
+```bash
+cd ~/TCC   # ou /mnt/cdc-data/TCC
+git pull
+chmod +x infra/deploy/*.sh
+
+# Uma vez (root): Nginx, Node, systemd, Basic Auth
+sudo ./infra/deploy/setup-dashboard.sh
+sudo nano /etc/cdc-cnpj/dashboard.env   # IP, senha, CDC_DATA_ROOT
+
+# Cada deploy
+./infra/deploy/deploy-dashboard.sh
+```
+
+Acesso: `http://2.28.28.54/` (usuário/senha do Basic Auth).
+
+Detalhes: [`infra/deploy/README.md`](../deploy/README.md).

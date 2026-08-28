@@ -52,3 +52,12 @@ Sincronize da VM com:
 scp -r user@VM:~/TCC/data/measurements ./data/
 scp -r user@VM:~/TCC/data/manifests ./data/
 ```
+
+## Produção na VM (Nginx + systemd)
+
+Ver [`infra/deploy/README.md`](../../infra/deploy/README.md):
+
+```bash
+sudo ./infra/deploy/setup-dashboard.sh   # uma vez
+./infra/deploy/deploy-dashboard.sh       # cada git pull
+```

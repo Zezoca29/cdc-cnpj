@@ -1,0 +1,23 @@
+[Unit]
+Description=CDC-CNPJ Dashboard API (changelog + artifacts)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/cdc-cnpj/dashboard.env
+WorkingDirectory=/opt/cdc-cnpj
+ExecStart=/usr/bin/java -jar /opt/cdc-cnpj/dashboard-api.jar
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cdc-cnpj-dashboard-api
+
+# Endurecimento básico
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
