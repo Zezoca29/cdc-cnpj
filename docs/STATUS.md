@@ -1,6 +1,6 @@
 # STATUS — CDC-CNPJ
 
-**Última atualização:** 2026-08-27 · **Semana:** S1 de 13 · **Dias até a entrega:** 81
+**Última atualização:** 2026-08-28 · **Semana:** S1 de 13 · **Dias até a entrega:** 80
 
 > **Atualize este arquivo ao fim de cada sessão de trabalho.** Não no fim da semana, não na
 > véspera do marco: ao fim da sessão. Uma linha honesta hoje vale mais que um relatório
@@ -56,6 +56,18 @@ que a S2 possa correr em paralelo real.
 
 Entrada mais recente no topo. Formato: data · quem · frente · o que avançou · o que travou ·
 o que a próxima pessoa precisa saber.
+
+### 2026-08-28 · agente · Pipeline real + dashboard (VM Hetzner)
+
+**Plano de execução iniciado (Fase 0):**
+
+- VM `cdc-ref` ligada; firewall Hetzner com TCP 22+80; dashboard em `http://2.28.28.54/` (Basic Auth).
+- A11 `2026-06` rodando em tmux `a11` (`--skip-download`); canonical ainda no início (~1,3 MB).
+- `schedule-nucleo-continuation.sh` ativo — encadeia A11 `2026-07` → pipeline canônico (256 buckets, E3) → `power-off.sh`.
+- Postgres `changelog.events` = 0 (esperado até o pipeline canônico).
+- Script de validação: `infra/cloud-vm/validate-dashboard-ready.sh` (gates do dashboard cheio).
+
+**Próximo:** aguardar A11 `2026-06` concluir (automático); monitorar `/tmp/cdc-nucleo-continuation.log` e `validate-dashboard-ready.sh` na VM.
 
 ### 2026-08-27 · agente · Expansão X1
 

@@ -38,6 +38,8 @@ nohup bash -c "
   echo \"[nucleo-continuation] iniciando pipeline de eventos (256 buckets, E3)\"
   cd '${ROOT}'
   ALL_BUCKETS=1 ENGINE=E3 ./infra/cloud-vm/run-canonical-pipeline.sh
+  echo \"[nucleo-continuation] validando dashboard\"
+  ./infra/cloud-vm/validate-dashboard-ready.sh || true
   echo \"[nucleo-continuation] pipeline de eventos concluída — desligando\"
   '${ROOT}/infra/cloud-vm/power-off.sh'
 " >>"$LOG" 2>&1 &

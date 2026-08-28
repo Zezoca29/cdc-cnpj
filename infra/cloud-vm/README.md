@@ -23,7 +23,7 @@ Provedores que costumam funcionar (ago/2026 — conferir preços):
 
 | Provedor | Exemplo | Observação |
 |---|---|---|
-| **Hetzner** | CX42 + volume 250 GB | Simples, ~€15–25/mês; desligar quando não usar |
+| **Hetzner** | CX32 + volume 250 GB | **Recomendado** — ver [`HETZNER.md`](HETZNER.md) |
 | **Oracle Cloud** | VM.Standard.A1.Flex (ARM) + boot 200 GB | Free tier; ARM roda Java 21 sem problema |
 | **Azure** | D4s_v5 + disco Premium 256 GB | Crédito estudante se disponível |
 
@@ -54,6 +54,7 @@ git clone git@github.com:Zezoca29/cdc-cnpj.git ~/TCC
 git clone https://github.com/Zezoca29/cdc-cnpj.git ~/TCC
 # usuário: seu login GitHub | senha: o token (não a senha da conta)
 ```
+
 cd ~/TCC
 chmod +x infra/cloud-vm/*.sh
 ./infra/cloud-vm/bootstrap.sh
@@ -98,6 +99,12 @@ docker compose up -d
 ```
 
 Esperado: eventos no Kafka + `changelog.events` no Postgres.
+
+Validação dos gates (dashboard cheio):
+
+```bash
+./infra/cloud-vm/validate-dashboard-ready.sh
+```
 
 ---
 
