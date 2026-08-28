@@ -1,5 +1,7 @@
 package br.univesp.tcc.cdccnpj.ingestion.normalize;
 
+import br.univesp.tcc.cdccnpj.ingestion.quality.QualityReportIo;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -34,8 +36,8 @@ public final class NormalizeCli {
 
         if (hasFlag(args, "--validate")) {
             NormalizationValidator validator = new NormalizationValidator();
-            for (NormalizationValidator.BucketValidationReport validation :
-                    validator.validate(canonicalRoot, competencia)) {
+            var validations = validator.validate(canonicalRoot, competencia);
+            for (NormalizationValidator.BucketValidationReport validation : validations) {
                 System.out.printf(
                         "validate %s buckets=%d/256 complete=%s missing=%d%n",
                         validation.tabela(),
@@ -43,6 +45,13 @@ public final class NormalizeCli {
                         validation.complete(),
                         validation.missingBuckets().size());
             }
+            QualityReportIo.write(
+                    QualityReportIo.defaultPath(projectRoot, competencia),
+                    QualityReportIo.fromNormalization(report, validations));
+        } else {
+            QualityReportIo.write(
+                    QualityReportIo.defaultPath(projectRoot, competencia),
+                    QualityReportIo.fromNormalization(report, java.util.List.of()));
         }
     }
 

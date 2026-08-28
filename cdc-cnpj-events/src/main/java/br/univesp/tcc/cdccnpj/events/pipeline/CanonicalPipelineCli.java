@@ -1,5 +1,7 @@
 package br.univesp.tcc.cdccnpj.events.pipeline;
 
+import br.univesp.tcc.cdccnpj.events.api.PipelineReportIo;
+import br.univesp.tcc.cdccnpj.events.api.PipelineReportIo.PipelineReportSnapshot;
 import br.univesp.tcc.cdccnpj.events.kafka.ChangelogConsumer;
 import br.univesp.tcc.cdccnpj.events.kafka.KafkaEventProducer;
 import br.univesp.tcc.cdccnpj.events.kafka.KafkaTopicProvisioner;
@@ -48,6 +50,8 @@ public final class CanonicalPipelineCli {
         if (diffOnly) {
             EventPipelineRunner.PipelineReport report = EventPipelineRunner.runDiffOnly(
                     canonicalRoot, competenciaDe, competenciaPara, tables, buckets, engine);
+            String runId = "canonical-diff-" + System.currentTimeMillis();
+            writePipelineReport(projectRoot, runId, engine, competenciaDe, competenciaPara, tables, buckets, report);
             printReport(report, engine, canonicalRoot, competenciaDe, competenciaPara, tables, buckets, false);
             return;
         }
@@ -77,6 +81,7 @@ public final class CanonicalPipelineCli {
                     producer,
                     consumer,
                     idleGrace);
+            writePipelineReport(projectRoot, runId, engine, competenciaDe, competenciaPara, tables, buckets, report);
             printReport(report, engine, canonicalRoot, competenciaDe, competenciaPara, tables, buckets, true);
             if (report.diffChanges() > 0 && report.changelogInserted() == 0) {
                 System.err.println("Published events but changelog_inserted=0 (idempotent replay or consumer timeout?)");
@@ -94,6 +99,20 @@ public final class CanonicalPipelineCli {
             return "60";
         }
         return "300";
+    }
+
+    private static void writePipelineReport(
+            Path projectRoot,
+            String runId,
+            String engine,
+            String competenciaDe,
+            String competenciaPara,
+            List<String> tables,
+            List<Integer> buckets,
+            EventPipelineRunner.PipelineReport report) {
+        PipelineReportSnapshot snapshot = PipelineReportSnapshot.from(
+                runId, engine, competenciaDe, competenciaPara, tables, buckets.size(), report);
+        PipelineReportIo.write(PipelineReportIo.defaultPath(projectRoot), snapshot);
     }
 
     private static void printReport(

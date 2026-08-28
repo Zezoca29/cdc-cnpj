@@ -1,0 +1,137 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: #1b5fc1;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #0d7a4f;
+  text-decoration: underline;
+}
+
+::selection {
+  background: rgba(27, 95, 193, 0.16);
+}
+
+input,
+select,
+button {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cdd6e0;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+  color: #0f2138;
+  font-family: 'IBM Plex Sans', Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.card {
+  border: 1px solid #e3e8ee;
+  background: #ffffff;
+  border-radius: 11px;
+  box-shadow:
+    0 1px 2px rgba(15, 33, 56, 0.05),
+    0 10px 26px -18px rgba(15, 33, 56, 0.18);
+}
+
+.field-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #5b6d80;
+  text-transform: uppercase;
+}
+
+.input,
+.select {
+  background: #f2f5f8;
+  border: 1px solid #cdd6e0;
+  color: #0f2138;
+  border-radius: 7px;
+  padding: 9px 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  outline: none;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #1b5fc1;
+}
+
+.btn {
+  border-radius: 7px;
+  padding: 9px 13px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #cdd6e0;
+  background: transparent;
+  color: #586a7d;
+}
+
+.btn:hover {
+  color: #0f2138;
+  border-color: #7a8c9f;
+}
+
+.btn-primary {
+  border: 1px solid #c7d7f0;
+  background: rgba(27, 95, 193, 0.08);
+  color: #0d7a4f;
+}
+
+.btn-primary:hover {
+  background: rgba(27, 95, 193, 0.14);
+}
+
+.skeleton {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #eaeff4, #e2e8ee, #eaeff4);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s linear infinite;
+}

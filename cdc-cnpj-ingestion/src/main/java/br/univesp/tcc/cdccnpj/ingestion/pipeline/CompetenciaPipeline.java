@@ -5,6 +5,8 @@ import br.univesp.tcc.cdccnpj.ingestion.download.DownloadReport;
 import br.univesp.tcc.cdccnpj.ingestion.normalize.CompetenciaNormalizationReport;
 import br.univesp.tcc.cdccnpj.ingestion.normalize.NormalizationRunner;
 import br.univesp.tcc.cdccnpj.ingestion.normalize.NormalizationValidator;
+import br.univesp.tcc.cdccnpj.ingestion.quality.QualityReport;
+import br.univesp.tcc.cdccnpj.ingestion.quality.QualityReportIo;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +45,9 @@ public final class CompetenciaPipeline {
             validations = validator.validate(canonicalRoot, competencia);
             success = success && validations.stream().allMatch(NormalizationValidator.BucketValidationReport::complete);
         }
+
+        QualityReport qualityReport = QualityReportIo.fromNormalization(normalizationReport, validations);
+        QualityReportIo.write(QualityReportIo.defaultPath(projectRoot, competencia), qualityReport);
 
         return new CompetenciaPipelineResult(competencia, downloadReport, normalizationReport, validations, success);
     }
