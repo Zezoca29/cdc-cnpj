@@ -1,0 +1,108 @@
+# Orquestra a VM Hetzner: ligar → disparar batch em tmux → VM desliga ao terminar.
+# O job longo roda NA VM (não neste workflow); este workflow só inicia e sai em ~2 min.
+name: Hetzner batch
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Ação
+        type: choice
+        options:
+          - run-batch
+          - power-on
+          - power-off
+          - status
+        default: run-batch
+      competencia:
+        description: Competência YYYY-MM (run-batch)
+        required: false
+        default: "2026-06"
+      competencia2:
+        description: Segunda competência opcional (run-batch)
+        required: false
+        default: ""
+
+concurrency:
+  group: hetzner-cdc-ref
+  cancel-in-progress: false
+
+jobs:
+  hetzner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Power on server
+        if: inputs.action == 'run-batch' || inputs.action == 'power-on'
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+          HETZNER_SERVER_ID: ${{ secrets.HETZNER_SERVER_ID }}
+        run: |
+          test -n "$HETZNER_TOKEN" || { echo "Secret HETZNER_TOKEN ausente"; exit 1; }
+          test -n "$HETZNER_SERVER_ID" || { echo "Secret HETZNER_SERVER_ID ausente"; exit 1; }
+          echo "Ligando servidor ${HETZNER_SERVER_ID}..."
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${HETZNER_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://api.hetzner.cloud/v1/servers/${HETZNER_SERVER_ID}/actions/poweron"
+          echo "Aguardando boot (90s)..."
+          sleep 90
+
+      - name: Power off server
+        if: inputs.action == 'power-off'
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+          HETZNER_SERVER_ID: ${{ secrets.HETZNER_SERVER_ID }}
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${HETZNER_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://api.hetzner.cloud/v1/servers/${HETZNER_SERVER_ID}/actions/poweroff"
+          echo "Power off solicitado."
+
+      - name: Status (SSH)
+        if: inputs.action == 'status'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            echo "=== uptime ==="
+            uptime
+            echo "=== tmux ==="
+            tmux list-sessions 2>/dev/null || echo "(sem sessões tmux)"
+            echo "=== processos pipeline ==="
+            pgrep -af 'IngestionPipelineCli|run-batch' || echo "(nenhum)"
+            echo "=== disco ==="
+            df -h /mnt/cdc-data 2>/dev/null || df -h .
+            echo "=== últimas linhas do log A11 ==="
+            ls -t ~/TCC/data/logs/a11-*.log 2>/dev/null | head -1 | xargs tail -20 2>/dev/null || echo "(sem log)"
+
+      - name: Start batch in tmux (detached)
+        if: inputs.action == 'run-batch'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd ~/TCC
+            git pull --ff-only
+            chmod +x infra/cloud-vm/*.sh
+            if tmux has-session -t batch 2>/dev/null; then
+              echo "Sessão tmux 'batch' já existe — abortando para evitar duplicata"
+              tmux list-sessions
+              exit 1
+            fi
+            ARGS="${{ inputs.competencia }}"
+            if [[ -n "${{ inputs.competencia2 }}" ]]; then
+              ARGS="$ARGS ${{ inputs.competencia2 }}"
+            fi
+            tmux new-session -d -s batch "./infra/cloud-vm/run-batch.sh ${ARGS}"
+            echo "Batch iniciado em tmux 'batch'. A VM desliga sozinha ao terminar."
+            tmux list-sessions

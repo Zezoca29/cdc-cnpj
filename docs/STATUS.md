@@ -122,6 +122,16 @@ o que a próxima pessoa precisa saber.
 
 **Próximo:** aguardar download 2026-06 (~85 GB); depois `IngestionPipelineCli --competencia 2026-06 --skip-download` + `CanonicalPipelineCli`.
 
+### 2026-08-28 · agente · Hetzner provisionado + GitHub Actions batch
+
+**VM `cdc-ref` (2.28.28.54, CX43, fsn1):** bootstrap OK, A11 `2026-06` rodando em tmux.
+
+- Scripts novos: `run-batch.sh`, `power-off.sh`, `schedule-shutdown-when-idle.sh`.
+- Workflow `.github/workflows/hetzner-batch.yml` — `run-batch` (liga → tmux → desliga), `status`, `power-off`.
+- Secrets GitHub: `HETZNER_TOKEN`, `HETZNER_SERVER_ID`, `HETZNER_HOST`, `HETZNER_SSH_KEY`.
+
+**Próximo:** cadastrar secrets no GitHub; após A11 atual, usar Actions para próximos batches.
+
 ### 2026-08-28 · agente · VM na nuvem (ADR-007)
 
 **Máquina de referência sem encher o notebook:**
