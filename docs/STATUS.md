@@ -130,7 +130,7 @@ o que a próxima pessoa precisa saber.
 - Workflow `.github/workflows/hetzner-batch.yml` — `run-batch` (liga → tmux → desliga), `status`, `power-off`.
 - Secrets GitHub: `HETZNER_TOKEN`, `HETZNER_SERVER_ID`, `HETZNER_HOST`, `HETZNER_SSH_KEY`.
 
-**Próximo:** A11 `2026-06` na VM; `schedule-nucleo-continuation.sh` enfileira `2026-07` + auto-shutdown ao terminar.
+**Próximo:** VM roda sequência automática: A11 `2026-06`→`2026-07` → pipeline eventos (256 buckets) → shutdown.
 
 ### 2026-08-28 · agente · VM na nuvem (ADR-007)
 
