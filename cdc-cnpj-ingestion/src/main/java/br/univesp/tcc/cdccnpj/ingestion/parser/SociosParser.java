@@ -40,7 +40,7 @@ public final class SociosParser {
         try (ZipInputStream zipInputStream = new ZipInputStream(java.nio.file.Files.newInputStream(zipPath))) {
             ZipEntry entry;
             while ((entry = zipInputStream.getNextEntry()) != null) {
-                if (!entry.isDirectory() && entry.getName().toLowerCase().endsWith(".csv")) {
+                if (ReceitaFederalZipEntry.isDataFile(entry)) {
                     String arquivoOrigem = zipPath.getFileName() + "::" + entry.getName();
                     return parseCsv(zipInputStream, request.withArquivoOrigem(arquivoOrigem), writer);
                 }

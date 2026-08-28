@@ -66,6 +66,27 @@ class DominioParserTest {
     }
 
     @Test
+    void parsesReceitaFederalZipEntryName(@TempDir Path tempDir, @TempDir Path canonicalRoot) throws IOException {
+        Path zipPath = tempDir.resolve("Cnaes.zip");
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+            zipOutputStream.putNextEntry(new ZipEntry("F.K03200$Z.D60509.CNAECSV"));
+            zipOutputStream.write(VALID_LINE.getBytes(StandardCharsets.ISO_8859_1));
+            zipOutputStream.closeEntry();
+        }
+
+        new DominioParser()
+                .parseZip(zipPath, new ParseRequest("2026-06", "pending", "sha-test"), canonicalRoot);
+
+        Path parquet = canonicalRoot
+                .resolve("competencia=2026-06")
+                .resolve("tabela=cnaes")
+                .resolve("part-0.parquet");
+
+        List<Map<String, String>> rows = new CanonicalParquetReader().readBucket(parquet);
+        assertEquals("6201500", rows.getFirst().get("codigo"));
+    }
+
+    @Test
     void resolvesTabelaFromZipFileName(@TempDir Path tempDir, @TempDir Path canonicalRoot) throws IOException {
         Path zipPath = tempDir.resolve("Motivos.zip");
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipPath))) {
