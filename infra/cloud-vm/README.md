@@ -44,10 +44,16 @@ chmod +x ~/cdc-cloud-vm/*.sh
 REPO_URL=https://github.com/Zezoca29/cdc-cnpj.git INSTALL_DIR=~/TCC ~/cdc-cloud-vm/bootstrap.sh
 ```
 
-Ou clone direto:
+Ou clone direto (repositório **privado** — use uma das opções abaixo):
 
 ```bash
+# Opção A: SSH (adicione a chave pública da VM em GitHub → Settings → SSH keys)
+git clone git@github.com:Zezoca29/cdc-cnpj.git ~/TCC
+
+# Opção B: HTTPS com Personal Access Token (GitHub → Settings → Developer settings → PAT)
 git clone https://github.com/Zezoca29/cdc-cnpj.git ~/TCC
+# usuário: seu login GitHub | senha: o token (não a senha da conta)
+```
 cd ~/TCC
 chmod +x infra/cloud-vm/*.sh
 ./infra/cloud-vm/bootstrap.sh
