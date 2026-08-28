@@ -44,18 +44,25 @@ SERVER_NAME="${DASHBOARD_SERVER_NAME:-_}"
 AUTH_USER="${DASHBOARD_AUTH_USER:-}"
 AUTH_PASS="${DASHBOARD_AUTH_PASSWORD:-}"
 
-AUTH_BLOCK=""
+AUTH_SNIPPET="/etc/nginx/cdc-cnpj-dashboard-auth.conf"
 if [[ -n "$AUTH_USER" && -n "$AUTH_PASS" ]]; then
   HTPASSWD_FILE="/etc/nginx/.htpasswd-cdc-cnpj"
   htpasswd -bc "$HTPASSWD_FILE" "$AUTH_USER" "$AUTH_PASS"
   chmod 640 "$HTPASSWD_FILE"
   chown root:www-data "$HTPASSWD_FILE"
-  AUTH_BLOCK=$'    auth_basic "CDC-CNPJ";\n    auth_basic_user_file /etc/nginx/.htpasswd-cdc-cnpj;'
+  cat >"$AUTH_SNIPPET" <<'EOF'
+    auth_basic "CDC-CNPJ";
+    auth_basic_user_file /etc/nginx/.htpasswd-cdc-cnpj;
+EOF
   echo "==> Basic Auth habilitado (usuário: $AUTH_USER)"
 elif [[ -f /etc/nginx/.htpasswd-cdc-cnpj ]]; then
-  AUTH_BLOCK=$'    auth_basic "CDC-CNPJ";\n    auth_basic_user_file /etc/nginx/.htpasswd-cdc-cnpj;'
+  cat >"$AUTH_SNIPPET" <<'EOF'
+    auth_basic "CDC-CNPJ";
+    auth_basic_user_file /etc/nginx/.htpasswd-cdc-cnpj;
+EOF
   echo "==> Basic Auth: usando /etc/nginx/.htpasswd-cdc-cnpj existente"
 else
+  echo "# Basic Auth desabilitado" >"$AUTH_SNIPPET"
   echo "AVISO: sem Basic Auth. Defina DASHBOARD_AUTH_USER e DASHBOARD_AUTH_PASSWORD em $ENV_FILE e rode de novo,"
   echo "      ou: sudo htpasswd -c /etc/nginx/.htpasswd-cdc-cnpj admin"
 fi
@@ -63,7 +70,6 @@ fi
 echo "==> Nginx site"
 sed -e "s|__SERVER_NAME__|$SERVER_NAME|g" \
     -e "s|__WEB_ROOT__|/var/www/cdc-cnpj-dashboard|g" \
-    -e "s|__AUTH_BLOCK__|$AUTH_BLOCK|g" \
     "$SCRIPT_DIR/nginx/cdc-cnpj-dashboard.conf" >/etc/nginx/sites-available/cdc-cnpj-dashboard
 ln -sf /etc/nginx/sites-available/cdc-cnpj-dashboard /etc/nginx/sites-enabled/cdc-cnpj-dashboard
 rm -f /etc/nginx/sites-enabled/default
