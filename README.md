@@ -49,6 +49,19 @@ ZIPs mensais  ->  Parquet canônico  ->  diff (E1 | E3)  ->  eventos  ->  change
 
 Java 21 · Spring Boot · Apache Parquet · Apache Kafka · PostgreSQL · Docker Compose · Maven
 
+```powershell
+# Infra local (Postgres + Kafka)
+docker compose up -d
+
+# Fixtures sintéticas
+mvn -pl cdc-cnpj-bench exec:java
+
+# Testes
+mvn -pl cdc-cnpj-common,cdc-cnpj-bench,cdc-cnpj-diff test
+```
+
+Ver [`infra/README.md`](infra/README.md) e [`cdc-cnpj-bench/fixtures/README.md`](cdc-cnpj-bench/fixtures/README.md).
+
 O pipeline roda **nativo na JVM**; só Postgres e Kafka são conteinerizados, porque o overhead
 de I/O do Docker sobre WSL2 contaminaria as medições.
 

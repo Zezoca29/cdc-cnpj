@@ -1,0 +1,19 @@
+# Buckets experimentais — diff E1/E3 (16 de 256)
+# Seleção uniforme: bucket_id = n * 16, n = 0..15
+# Referência: spec §9, ADR-001, CONTRATOS.md §7
+000
+016
+032
+048
+064
+080
+096
+112
+128
+144
+160
+176
+192
+208
+224
+240

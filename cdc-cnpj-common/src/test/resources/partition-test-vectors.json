@@ -1,0 +1,10 @@
+[
+  {"cnpj_basico": "00000000", "bucket": 11},
+  {"cnpj_basico": "12345678", "bucket": 206},
+  {"cnpj_basico": "12ABC345", "bucket": 222},
+  {"cnpj_basico": "87654321", "bucket": 184},
+  {"cnpj_basico": "00000001", "bucket": 220},
+  {"cnpj_basico": "99999999", "bucket": 145},
+  {"cnpj_basico": "ABCDEFGH", "bucket": 82},
+  {"cnpj_basico": "0000000A", "bucket": 64}
+]

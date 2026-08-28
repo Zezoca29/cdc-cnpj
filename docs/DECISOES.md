@@ -37,6 +37,161 @@ Não registre: escolhas locais de implementação sem efeito sobre outras frente
 
 ---
 
+---
+
+## ADR-007 — Máquina de referência em VM na nuvem
+
+**Data:** 2026-08-28 · **Autor:** agente · **Frente:** A / infra
+**Estado:** aceito
+
+**Contexto.** O notebook de desenvolvimento não dispõe de ~250 GB livres para duas competências
+(raw ~85 GB cada + Parquet canônico). A spec já prevê uma máquina de referência separada; o time
+precisa executar A11 e medições definitivas sem bloquear o desenvolvimento local (fixtures sintéticas).
+
+**Decisão.** Adotar uma **VM Linux na nuvem** (Hetzner, Oracle Free Tier ou equivalente) como
+máquina de referência: roda `IngestionPipelineCli`, guarda `data/canonical/` e executa o protocolo
+de medição. O notebook sincroniza apenas artefatos pequenos (`data/measurements/`, manifestos,
+amostras de bucket).
+
+**Custo.** ~2–4 h de setup + custo mensal da VM (desligar quando ociosa). Scripts em
+`infra/cloud-vm/`.
+
+**Consequências.** A11 deixa de depender do hardware do notebook. Medições definitivas e marco
+“primeiro evento real” rodam na VM. Monografia documenta o ambiente da VM como oráculo de medição.
+
+**Alternativas descartadas.** Object storage com streaming (S3/R2) — exige ADR de dependência e
+código novo. Plano B só Estabelecimentos — válido como fallback, mas a VM permite o núcleo completo.
+
+---
+
+## ADR-006 — Quarentena de deletes (Expansão X4, P3)
+
+**Data:** 2026-08-27 · **Autor:** agente · **Frente:** C
+**Estado:** aceito
+**Aprovação necessária:** todas as frentes (comportamento de publicação de eventos)
+
+**Contexto.** No snapshot differencing, um `DELETE` significa ausência na competência destino.
+Isso pode ser transitório (republicação da RF, atraso de carga) ou um falso positivo corrigido na
+competência seguinte. Publicar `empresa.encerrada` imediatamente gera eventos irreversíveis no
+changelog (problema P3).
+
+**Decisão.**
+
+1. `ChangeRecord` com `DELETE` entra em **quarentena** antes da publicação Kafka.
+2. `INSERT` com a mesma `entity_key` **cancela** a quarentena (ressurreição).
+3. Ao final do lote (`flush`), deletes ainda pendentes são **confirmados** e publicados.
+4. **Fast-path:** `DELETE` em `estabelecimentos` com `situacao_cadastral=08` no `before` confirma
+   imediatamente (encerramento cadastral explícito na fonte).
+5. Constante `CONFIRMATION_COMPETENCIAS = 1` — uma transição completa confirma deletes restantes.
+
+**Custo.** ~6 h. Não retira itens do Núcleo.
+
+**Consequências.** O produtor Kafka deve usar `QuarantineProcessor` antes de publicar. Métricas
+`quarantined / cancelled / confirmed` alimentam a análise de qualidade na monografia.
+
+**Alternativas descartadas.** Descartar deletes silenciosamente — viola R4. Quarentena em Postgres
+persistente — complexidade desnecessária para duas competências; store in-memory basta.
+
+---
+
+## ADR-005 — Schema Simples e evento de opção (Expansão X3)
+
+**Data:** 2026-08-27 · **Autor:** agente · **Frente:** A/B/C
+**Estado:** aceito
+**Aprovação necessária:** todas as frentes (estende contratos da Expansão)
+
+**Contexto.** A tabela Simples (`Simples.zip`) traz adesão ao Simples Nacional e ao MEI por
+`cnpj_basico`. É um arquivo único (~200 MB), particionado como empresas. A spec define um único
+tipo de evento: `simples.opcao_alterada`.
+
+**Decisão.**
+
+1. Schema Parquet `simples` com 6 colunas de negócio do layout RF (7 campos CSV, chave separada).
+2. Chave natural: `cnpj_basico` (uma linha por empresa no regime).
+3. Particionamento murmur3 mod 256 por `cnpj_basico`.
+4. Flags `opcao_pelo_simples` e `opcao_pelo_mei` permanecem `S`/`N`/null (string).
+5. Datas convertidas via `ReceitaDateParser` (`00000000` → null).
+6. Tópico `cnpj.simples`; todo `ChangeRecord` de `simples` mapeia para `simples.opcao_alterada`.
+
+**Custo.** ~6 h. Não retira itens do Núcleo.
+
+**Consequências.** Diff E1/E3 funciona sem alteração de motor. Empresas sem linha em Simples não
+geram bucket — materialização de buckets vazios cobre lacunas.
+
+**Alternativas descartadas.** Booleanos Avro — inconsistente com demais códigos string do projeto.
+
+---
+
+## ADR-004 — Schema Socios e chave de identidade (Expansão X2)
+
+**Data:** 2026-08-27 · **Autor:** agente · **Frente:** A/B/C
+**Estado:** aceito
+**Aprovação necessária:** todas as frentes (estende contratos de evento e schema canônico da Expansão)
+
+**Contexto.** A tabela Socios da RF não tem chave natural estável: o CPF/CNPJ do sócio vem mascarado
+e pode mudar entre competências sem que a pessoa tenha saído da sociedade (problema P2). Diff
+ingênuo por `(cnpj_basico, identificador_socio, cpf_cnpj_socio)` gera pares falsos
+`socio.excluido` + `socio.incluido` — eventos fantasma (spec §17).
+
+**Decisão.**
+
+1. Adicionar schema Parquet `socios` com 11 colunas de negócio do layout RF + campo derivado
+   `socio_identity_key`, particionado por `cnpj_basico` (mesma função murmur3 mod 256).
+2. Chave natural do diff **com identidade:** `(cnpj_basico, socio_identity_key)`, onde
+   `socio_identity_key = murmur3_128(utf8(cnpj_basico|identificador_socio|nome_normalizado))`.
+   - `nome_normalizado`: maiúsculas, trim, espaços colapsados, sem pontuação, **sem acentos** (NFD).
+   - O CPF/CNPJ mascarado **não** entra na chave — é instável entre competências (causa raiz de P2).
+3. Chave **ingênua** (somente para medir fantasmas): `(cnpj_basico, identificador_socio, cpf_cnpj_socio)`.
+4. Tópico Kafka `cnpj.socios`; tipos `socio.incluido`, `socio.excluido`, `socio.alterado`.
+5. Métrica de evento fantasma: contar pares DELETE+INSERT do diff ingênuo no mesmo `cnpj_basico`
+   cujo `socio_identity_key` coincide (pareamento 1:1 guloso).
+
+**Custo.** ~12 h (parser + diff + eventos + métrica + testes). Não retira itens do Núcleo.
+
+**Consequências.** O diff de produção usa identidade; a métrica de fantasma quantifica o custo de
+ignorar P2. Fellegi-Sunter completo fica fora — heurística determinística basta para demonstrar o
+problema na monografia.
+
+**Alternativas descartadas.** Fellegi-Sunter com zona de revisão manual — inviável em escala
+automatizada (spec §A8). Chave só por nome — colisões excessivas em nomes comuns.
+
+---
+
+## ADR-003 — Título da monografia
+
+**Data:** 2026-08-18 · **Autor:** montagem da Atividade 01 · **Frente:** todas
+**Estado:** **aceito** — ratificado em 2026-08-27 para destravar S2; integrantes podem registrar objeção até 31/ago
+**Aprovação necessária:** todas as frentes (o título aparece na capa, no repositório e na defesa)
+
+**Contexto.** A Atividade 01 exige um título. Título é decisão difícil de reverter depois que
+entra em capa, resumo, repositório e slides, e é exatamente o tipo de escolha que quatro pessoas
+fariam de quatro jeitos diferentes. Melhor decidir uma vez, cedo, e registrar.
+
+**Decisão.** Adotar:
+
+> Change Data Capture sobre snapshots de dados abertos: um pipeline reprodutível para detecção e
+> publicação de eventos de mudança no cadastro do CNPJ
+
+O título nomeia os três elementos que a banca vai cobrar: o **problema** (CDC sobre snapshots), a
+**propriedade defendida** (reprodutibilidade) e o **domínio** (CNPJ). Se a banca preferir ênfase
+experimental, acrescenta-se o subtítulo "comparação entre uma estratégia relacional e uma
+estratégia particionada por hash em hardware de commodity", registrado como variante no documento
+da Atividade 01.
+
+**Custo.** Zero em horas. O custo de não decidir é retrabalho de capa, resumo e slides na S12.
+
+**Consequências.** O título compromete a monografia com "reprodutível": manifesto com SHA-256,
+protocolo repetível e dados brutos de medição publicados deixam de ser desejáveis e passam a ser
+obrigatórios. Também deixa claro, pela ausência, que escala completa **não** é prometida — o que é
+coerente com o ADR-001.
+
+**Alternativas descartadas.** "Big Data aplicado aos dados abertos do CNPJ" (vago, não diz o que
+foi construído nem medido); "Pipeline ETL para os dados públicos do CNPJ" (descreve um ETL comum e
+esconde a contribuição); "Detecção de mudanças em grandes volumes de dados" (genérico, perde
+domínio e reprodutibilidade).
+
+---
+
 ## ADR-002 — Normalizar os 256 buckets desde o núcleo, mas diferenciar apenas 16
 
 **Data:** 2026-08-18 · **Autor:** definição inicial · **Frente:** todas

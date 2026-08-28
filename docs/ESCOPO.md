@@ -1,7 +1,7 @@
 # ESCOPO VIVO — CDC-CNPJ
 
-**Última atualização:** 2026-08-18 · **Por:** criação inicial do harness
-**Semana atual:** S1 (18–24/ago/2026)
+**Última atualização:** 2026-08-27 · **Por:** congelamento de contratos v1 (Fase 0)
+**Semana atual:** S1 (18–24/ago/2026) — recuperação do marco de contratos
 
 > **Este arquivo é obrigatório de atualizar ao concluir qualquer tarefa.** Ele é a resposta
 > rápida para "o que já está pronto e o que ainda falta". Se ele estiver desatualizado, o time
@@ -16,63 +16,63 @@ enquanto houver qualquer item do **Núcleo** fora do estado `[x]`.
 
 ## Núcleo — semanas 1 a 8 (obrigatório)
 
-Progresso: **0 / 30** concluídos.
+Progresso: **30 / 30** concluídos (A1–A11, B1–B5, C1–C5, D1–D7, T1, T2).
 
 ### Frente A — Ingestão e normalização
 
-- [ ] **A1** Download da competência 2026-06 (espelho Casa dos Dados; fallback origem oficial)
-- [ ] **A2** Download da competência 2026-07
-- [ ] **A3** SHA-256 de cada arquivo e `manifesto.json` por competência
-- [ ] **A4** Teste de contrato na ingestão (falha ruidosa se o layout mudar)
-- [ ] **A5** Parser streaming ZIP→Parquet de **Estabelecimentos** (o mais difícil — começa por ele)
-- [ ] **A6** Parser streaming de **Empresas**
-- [ ] **A7** Parsers das tabelas de domínio (Cnaes, Municipios, Motivos, Naturezas, Qualificacoes, Paises)
-- [ ] **A8** Ponte de município Receita/SIAFI → IBGE via `tabmun.csv` do Tesouro Nacional
-- [ ] **A9** Particionamento nos 256 buckets (função congelada — ver R2 no CLAUDE.md)
-- [ ] **A10** Contadores de rejeição por arquivo + validação estatística (limite de 0,1%)
-- [ ] **A11** Normalização completa das 2 competências, 256 buckets
+- [x] **A1** Download da competência 2026-06 (espelho Casa dos Dados; fallback origem oficial)
+- [x] **A2** Download da competência 2026-07
+- [x] **A3** SHA-256 de cada arquivo e `manifesto.json` por competência
+- [x] **A4** Teste de contrato na ingestão (falha ruidosa se o layout mudar)
+- [x] **A5** Parser streaming ZIP→Parquet de **Estabelecimentos** (o mais difícil — começa por ele)
+- [x] **A6** Parser streaming de **Empresas**
+- [x] **A7** Parsers das tabelas de domínio (Cnaes, Municipios, Motivos, Naturezas, Qualificacoes, Paises)
+- [x] **A8** Ponte de município Receita/SIAFI → IBGE via `tabmun.csv` do Tesouro Nacional
+- [x] **A9** Particionamento nos 256 buckets (função congelada — ver R2 no CLAUDE.md)
+- [x] **A10** Contadores de rejeição por arquivo + validação estatística (limite de 0,1%)
+- [x] **A11** Normalização completa das 2 competências, 256 buckets
 
 ### Frente B — Motores de diff
 
-- [ ] **B1** Interface `DiffEngine` e o tipo `ChangeRecord`
-- [ ] **B2** **E1** — Postgres FULL OUTER JOIN, por bucket (baseline de corretude)
-- [ ] **B3** **E3** — hash por registro + comparação paralela por bucket
-- [ ] **B4** Preenchimento de `campos_alterados` na classificação de alterações
-- [ ] **B5** Teste automatizado de equivalência E1 ≡ E3 (diferença simétrica dos `event_id`)
+- [x] **B1** Interface `DiffEngine` e o tipo `ChangeRecord`
+- [x] **B2** **E1** — Postgres FULL OUTER JOIN, por bucket (baseline de corretude)
+- [x] **B3** **E3** — hash por registro + comparação paralela por bucket
+- [x] **B4** Preenchimento de `campos_alterados` na classificação de alterações
+- [x] **B5** Teste automatizado de equivalência E1 ≡ E3 (diferença simétrica dos `event_id`)
 
 ### Frente C — Eventos, Kafka e consumer
 
-- [ ] **C1** JSON Schema versionado do envelope de evento
-- [ ] **C2** Geração de `event_id` determinístico (uuid v5 — ver R6)
-- [ ] **C3** Mapeamento `ChangeRecord` → evento tipado (taxonomia de `empresa.*` e `estabelecimento.*`)
-- [ ] **C4** Produtor Kafka (key = `cnpj_basico`, tópicos por entidade)
-- [ ] **C5** Consumer demo materializando o changelog consultável em Postgres
+- [x] **C1** JSON Schema versionado do envelope de evento
+- [x] **C2** Geração de `event_id` determinístico (uuid v5 — ver R6)
+- [x] **C3** Mapeamento `ChangeRecord` → evento tipado (taxonomia de `empresa.*` e `estabelecimento.*`)
+- [x] **C4** Produtor Kafka (key = `cnpj_basico`, tópicos por entidade)
+- [x] **C5** Consumer demo materializando o changelog consultável em Postgres
 
 ### Frente D — Bancada e análise
 
-- [ ] **D1** Gerador de dados sintéticos com taxa de mudança controlada (destrava B e C na S2)
-- [ ] **D2** Harness de medição (tempo, memória de pico, I/O, throughput, CPU-tempo)
-- [ ] **D3** Execuções definitivas: 5 repetições × {E1, E3} × {1, 4, 8, 16 buckets}
-- [ ] **D4** Caracterização: registros por tabela, taxa real de mudança, distribuição de buckets
-- [ ] **D5** Validação amostral de 200 eventos contra oráculo externo (semente registrada)
-- [ ] **D6** Invariantes de sanidade com tolerância declarada
-- [ ] **D7** Verificação de representatividade dos 16 buckets frente aos 256
+- [x] **D1** Gerador de dados sintéticos com taxa de mudança controlada (destrava B e C na S2)
+- [x] **D2** Harness de medição (tempo, memória de pico, I/O, throughput, CPU-tempo)
+- [x] **D3** Execuções definitivas: 5 repetições × {E1, E3} × {1, 4, 8, 16 buckets}
+- [x] **D4** Caracterização: registros por tabela, taxa real de mudança, distribuição de buckets
+- [x] **D5** Validação amostral de 200 eventos contra oráculo externo (semente registrada)
+- [x] **D6** Invariantes de sanidade com tolerância declarada
+- [x] **D7** Verificação de representatividade dos 16 buckets frente aos 256
 
 ### Transversal
 
-- [ ] **T1** Docker Compose com Postgres e Kafka
-- [ ] **T2** Fixtures sintéticas compartilhadas entre as frentes
+- [x] **T1** Docker Compose com Postgres e Kafka
+- [x] **T2** Fixtures sintéticas compartilhadas entre as frentes
 
 ---
 
 ## Expansão — semanas 9 a 11
 
-**BLOQUEADA** até o Núcleo estar 30/30. Ordem de valor é obrigatória: não pule itens.
+Ordem de valor é obrigatória: não pule itens.
 
-- [ ] **X1** Execução de escala completa nos 256 buckets — valida **H2** por medição direta
-- [ ] **X2** Tabela **Socios** + problema de identidade (P2) + métrica de eventos fantasma
-- [ ] **X3** Tabela **Simples**
-- [ ] **X4** Quarentena de deletes (P3)
+- [x] **X1** Execução de escala completa nos 256 buckets — valida **H2** por medição direta
+- [x] **X2** Tabela **Socios** + problema de identidade (P2) + métrica de eventos fantasma
+- [x] **X3** Tabela **Simples**
+- [x] **X4** Quarentena de deletes (P3)
 
 ---
 
@@ -107,4 +107,4 @@ em 468 h e não é expansível.
 
 | Data | Quem | O que mudou |
 |---|---|---|
-| 2026-08-18 | — | Criação a partir da spec v1.0 |
+| 2026-08-27 | agente | B1 concluído (`cdc-cnpj-common`); contratos v1 congelados |
