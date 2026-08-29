@@ -35,8 +35,8 @@ echo "Raiz: $ROOT"
 df -h /mnt/cdc-data 2>/dev/null | tail -1 || df -h . | tail -1
 echo
 
-if pgrep -f 'IngestionPipelineCli' >/dev/null 2>&1; then
-  warn "A11 em execução ($(pgrep -af IngestionPipelineCli | head -1))"
+if pgrep -f 'cdc-cnpj-ingestion exec:java' >/dev/null 2>&1; then
+  warn "A11 em execução ($(pgrep -af 'cdc-cnpj-ingestion exec:java' | head -1))"
 else
   ok "nenhum IngestionPipelineCli ativo"
 fi

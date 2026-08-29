@@ -21,7 +21,7 @@ fi
 nohup bash -c "
   set -euo pipefail
   echo \"[nucleo-continuation] aguardando 2026-06 terminar...\"
-  while pgrep -f 'IngestionPipelineCli' >/dev/null 2>&1; do
+  while pgrep -f 'cdc-cnpj-ingestion exec:java' >/dev/null 2>&1; do
     sleep 60
   done
   sleep 10

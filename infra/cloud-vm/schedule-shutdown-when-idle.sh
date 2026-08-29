@@ -13,7 +13,7 @@ fi
 
 nohup bash -c "
   echo \"[shutdown-watcher] aguardando pipeline terminar...\"
-  while pgrep -f 'IngestionPipelineCli|run-batch.sh' >/dev/null 2>&1; do
+  while pgrep -f 'cdc-cnpj-ingestion exec:java|run-batch.sh' >/dev/null 2>&1; do
     sleep 60
   done
   sleep 30
