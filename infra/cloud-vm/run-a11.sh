@@ -25,7 +25,7 @@ mvn -pl cdc-cnpj-ingestion exec:java \
   -Dexec.jvmArgs="${EXEC_JVM_ARGS}" \
   -Dexec.mainClass=br.univesp.tcc.cdccnpj.ingestion.pipeline.IngestionPipelineCli \
   -Dexec.args="--competencia ${COMPETENCIA} ${EXTRA_ARGS[*]}" \
-  2>&1 | tee -a "$LOG_FILE"
+  2>&1 | grep -vE ' DEBUG org\.apache\.parquet' | tee -a "$LOG_FILE"
 
 echo "=== Concluído. Para liberar disco dos ZIPs brutos: ===" | tee -a "$LOG_FILE"
 echo "  rm -rf data/raw/competencia=${COMPETENCIA}" | tee -a "$LOG_FILE"
